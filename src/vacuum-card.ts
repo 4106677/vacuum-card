@@ -99,6 +99,16 @@ export class VacuumCard extends LitElement {
   }
 
   public shouldUpdate(changedProps: PropertyValues): boolean {
+    const previousHass = changedProps.get('hass') as HomeAssistant | undefined;
+    if (
+      previousHass &&
+      this.config.status_entity &&
+      (previousHass.states[this.config.status_entity] !==
+        this.hass.states[this.config.status_entity] ||
+        previousHass.locale !== this.hass.locale)
+    ) {
+      return true;
+    }
     return hasConfigOrEntityChanged(this, changedProps, false);
   }
 
@@ -405,8 +415,16 @@ export class VacuumCard extends LitElement {
 
   private renderStatus(): Template {
     const { status } = this.getAttributes(this.entity);
-    const localizedStatus =
-      localize(`status.${status.toLowerCase()}`) || status;
+    const statusEntity = this.config.status_entity
+      ? this.hass.states[this.config.status_entity]
+      : undefined;
+    const hass = this.hass as HomeAssistant & {
+      formatEntityState?: (entity: HassEntity) => string;
+    };
+    const localizedStatus = statusEntity
+      ? (hass.formatEntityState?.(statusEntity) ??
+        computeStateDisplay(this.hass.localize, statusEntity, this.hass.locale))
+      : localize(`status.${status.toLowerCase()}`) || status;
 
     if (!this.config.show_status) {
       return nothing;
