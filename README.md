@@ -106,21 +106,22 @@ shortcuts:
 
 Here is what every option means:
 
-| Name             |   Type    | Default      | Description                                                                                               |
-| ---------------- | :-------: | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `type`           | `string`  | **Required** | `custom:vacuum-card`                                                                                      |
-| `entity`         | `string`  | **Required** | An entity_id within the `vacuum` domain.                                                                  |
-| `battery_entity` | `string`  | Optional     | An entity_id within the `sensor` domain to display battery state and icon.                                |
-| `map`            | `string`  | Optional     | An entity_id within the `camera` domain, for streaming live vacuum map.                                   |
-| `map_refresh`    | `integer` | `5`          | Update interval for map camera in seconds                                                                 |
-| `image`          | `string`  | `default`    | Path to image of your vacuum cleaner. Better to have `png` or `svg`.                                      |
-| `show_name`      | `boolean` | `true`       | Show friendly name of the vacuum.                                                                         |
-| `show_status`    | `boolean` | `true`       | Show status of the vacuum.                                                                                |
-| `show_toolbar`   | `boolean` | `true`       | Show toolbar with actions.                                                                                |
-| `compact_view`   | `boolean` | `false`      | Compact view without image.                                                                               |
-| `stats`          | `object`  | Optional     | Custom per state stats for your vacuum cleaner                                                            |
-| `actions`        | `object`  | Optional     | Override default actions behavior with service invocations.                                               |
-| `shortcuts`      |  `array`  | Optional     | List of shortcuts shown at the right bottom part of the card with custom actions for your vacuum cleaner. |
+| Name             |   Type    | Default      | Description                                                                                                                                        |
+| ---------------- | :-------: | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`           | `string`  | **Required** | `custom:vacuum-card`                                                                                                                               |
+| `entity`         | `string`  | **Required** | An entity_id within the `vacuum` domain.                                                                                                           |
+| `battery_entity` | `string`  | Optional     | An entity_id within the `sensor` domain to display battery state and icon.                                                                         |
+| `status_entity`  | `string`  | Optional     | A separate status entity, formatted using Home Assistant's translations. Missing entities fall back to the vacuum status. YAML configuration only. |
+| `map`            | `string`  | Optional     | An entity_id within the `camera` domain, for streaming live vacuum map.                                                                            |
+| `map_refresh`    | `integer` | `5`          | Update interval for map camera in seconds                                                                                                          |
+| `image`          | `string`  | `default`    | Path to image of your vacuum cleaner. Better to have `png` or `svg`.                                                                               |
+| `show_name`      | `boolean` | `true`       | Show friendly name of the vacuum.                                                                                                                  |
+| `show_status`    | `boolean` | `true`       | Show status of the vacuum.                                                                                                                         |
+| `show_toolbar`   | `boolean` | `true`       | Show toolbar with actions.                                                                                                                         |
+| `compact_view`   | `boolean` | `false`      | Compact view without image.                                                                                                                        |
+| `stats`          | `object`  | Optional     | Custom per state stats for your vacuum cleaner                                                                                                     |
+| `actions`        | `object`  | Optional     | Override default actions behavior with service invocations.                                                                                        |
+| `shortcuts`      |  `array`  | Optional     | List of shortcuts shown at the right bottom part of the card with custom actions for your vacuum cleaner.                                          |
 
 ### `stats` object
 
@@ -154,6 +155,41 @@ You can defined [custom scripts][ha-scripts] for custom actions i.e cleaning spe
 | `target`       | `object` | Optional | A `HassServiceTarget`, to define a target for the current service call. |
 | `icon`         | `string` | Optional | Any icon for action button.                                             |
 | `service_data` | `object` | Optional | `service_data` for `service` call                                       |
+
+### MOVA / Dreame status and sensors
+
+Some integrations expose a detailed status sensor alongside the vacuum. Use
+`status_entity` to display its translated state (for example, `sleeping`) instead
+of an untranslated vacuum attribute such as `Sleeping`. Commands and toolbar
+buttons still use the vacuum entity's state.
+
+```yaml
+type: custom:vacuum-card
+entity: vacuum.my_robot
+battery_entity: sensor.my_robot_battery_level
+status_entity: sensor.my_robot_status
+map: camera.my_robot_map
+map_refresh: 15
+stats:
+  default:
+    - entity_id: sensor.my_robot_main_brush_left
+      unit: '%'
+      subtitle: Main brush
+    - entity_id: sensor.my_robot_filter_left
+      unit: '%'
+      subtitle: Filter
+  cleaning:
+    - entity_id: sensor.my_robot_cleaned_area
+      unit: m²
+      subtitle: Cleaned area
+    - entity_id: sensor.my_robot_cleaning_time
+      unit: min
+      subtitle: Cleaning time
+```
+
+Replace these example IDs with your integration's entities. The map is a camera
+preview; interactive room selection and station settings require separate cards
+or configured shortcuts. Only use controls exposed by your integration.
 
 ## Theming
 
